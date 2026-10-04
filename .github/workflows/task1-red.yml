@@ -1,4 +1,4 @@
-name: Task 1 Verification
+name: Pesmad App Verification
 
 on:
   push:
@@ -18,9 +18,13 @@ jobs:
           node-version: 24
       - name: Install dependencies
         run: npm install
-      - name: Run tests
+      - name: Run unit tests
         run: npm test
       - name: Typecheck
         run: npm run lint
       - name: Build
         run: npm run build
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Run PWA browser test
+        run: npm run test:e2e -- e2e/pwa.spec.ts
