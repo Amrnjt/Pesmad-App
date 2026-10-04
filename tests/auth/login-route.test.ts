@@ -23,13 +23,15 @@ const identity = {
 };
 
 describe('Pesmad login HTTP boundary', () => {
-  it('returns token/profile with no-store for valid credentials', async () => {
-    const authenticate = vi.fn().mockResolvedValue({ identity, idToken: 'token-1' });
+  it('returns only the sanitized profile with no-store for valid credentials', async () => {
+    const authenticate = vi.fn().mockResolvedValue({ identity, idToken: 'server-only-token' });
     const response = await handleLoginRequest({ username: 'ustadz01', password: 'secret' }, authenticate);
 
     expect(response.status).toBe(200);
     expect(response.headers.get('cache-control')).toBe('no-store');
-    await expect(response.json()).resolves.toEqual({ profile: identity, idToken: 'token-1' });
+    const payload = await response.json();
+    expect(payload).toEqual({ profile: identity });
+    expect(JSON.stringify(payload)).not.toContain('server-only-token');
   });
 
   it.each([401, 403])('maps PesmadLoginError status %s without leaking credentials', async (status) => {
