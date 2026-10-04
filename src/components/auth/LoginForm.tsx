@@ -1,19 +1,15 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
+import type { FormEvent } from 'react';
+import { useRouter } from 'next/navigation';
 
 type LoginResponse = {
   error?: string;
 };
 
-function safeNextPath(value: string | null): string {
-  return value?.startsWith('/') && !value.startsWith('//') ? value : '/dashboard';
-}
-
-export function LoginForm() {
+export function LoginForm({ redirectTo }: { redirectTo: string }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -37,7 +33,7 @@ export function LoginForm() {
         return;
       }
 
-      router.replace(safeNextPath(searchParams.get('next')));
+      router.replace(redirectTo);
       router.refresh();
     } catch {
       setError('Koneksi terganggu. Periksa internet Anda lalu coba lagi.');
