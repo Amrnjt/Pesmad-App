@@ -14,6 +14,19 @@ on:
       - 'e2e/auth.spec.ts'
       - 'playwright.config.ts'
       - '.github/workflows/auth-e2e.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'src/app/api/auth/**'
+      - 'src/components/auth/**'
+      - 'src/app/login/**'
+      - 'src/app/dashboard/**'
+      - 'src/components/dashboard/**'
+      - 'src/proxy.ts'
+      - 'e2e/auth.spec.ts'
+      - 'playwright.config.ts'
+      - '.github/workflows/auth-e2e.yml'
 
 jobs:
   auth:
