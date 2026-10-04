@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   authenticatePesmadCredentials,
-  PesmadLoginError,
   UnsupportedLegacyRoleError,
   type LoginDependencies,
 } from '../../src/lib/auth/loginService';
@@ -88,7 +87,7 @@ describe('lazy Pesmad credential migration', () => {
 
     await expect(
       authenticatePesmadCredentials({ username: 'Ustadz01', password: 'wrong' }, deps),
-    ).rejects.toMatchObject<PesmadLoginError>({ status: 401 });
+    ).rejects.toMatchObject({ status: 401 });
 
     expect(deps.createFirebaseUser).not.toHaveBeenCalled();
     expect(deps.createMigratedIdentity).not.toHaveBeenCalled();
@@ -101,7 +100,7 @@ describe('lazy Pesmad credential migration', () => {
 
     await expect(
       authenticatePesmadCredentials({ username: 'wali01', password: 'valid' }, deps),
-    ).rejects.toMatchObject<PesmadLoginError>({ status: 403 });
+    ).rejects.toMatchObject({ status: 403 });
 
     expect(deps.createFirebaseUser).not.toHaveBeenCalled();
     expect(deps.createMigratedIdentity).not.toHaveBeenCalled();
