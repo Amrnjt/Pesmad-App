@@ -34,6 +34,28 @@ describe('Pesmad login HTTP boundary', () => {
     expect(JSON.stringify(payload)).not.toContain('server-only-token');
   });
 
+  it('exchanges the server-only ID token for a secure production session cookie', async () => {
+    const authenticate = vi.fn().mockResolvedValue({ identity, idToken: 'server-only-token' });
+    const createSession = vi.fn().mockResolvedValue('signed-session-cookie');
+
+    const response = await handleLoginRequest(
+      { username: 'ustadz01', password: 'secret' },
+      authenticate,
+      createSession,
+      'production',
+    );
+
+    expect(createSession).toHaveBeenCalledWith('server-only-token');
+    const setCookie = response.headers.get('set-cookie') ?? '';
+    expect(setCookie).toContain('__Host-pesmad_session=signed-session-cookie');
+    expect(setCookie).toContain('HttpOnly');
+    expect(setCookie).toContain('Secure');
+    expect(setCookie).toContain('SameSite=lax');
+    expect(setCookie).toContain('Path=/');
+    expect(setCookie).toContain('Max-Age=432000');
+    expect(await response.json()).toEqual({ profile: identity });
+  });
+
   it.each([401, 403])('maps PesmadLoginError status %s without leaking credentials', async (status) => {
     const authenticate = vi.fn().mockRejectedValue(new PesmadLoginError(status, 'Akses ditolak.'));
     const response = await handleLoginRequest({ username: 'user', password: 'secret-value' }, authenticate);
