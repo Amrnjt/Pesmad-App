@@ -36,6 +36,12 @@ export async function getIdentityByUsername(username: string): Promise<PesmadUse
   return snapshot.docs[0].data() as PesmadUser;
 }
 
+export async function getIdentityByAuthUid(authUid: string): Promise<PesmadUser | null> {
+  const snapshot = await getPesmadFirestore().collection('pesmadUsers').doc(authUid).get();
+  if (!snapshot.exists) return null;
+  return snapshot.data() as PesmadUser;
+}
+
 export async function createMigratedIdentity(
   input: LegacyInternalUser & { authUid: string },
 ): Promise<PesmadUser> {
