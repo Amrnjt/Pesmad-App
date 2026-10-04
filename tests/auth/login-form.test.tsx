@@ -1,8 +1,13 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { LoginForm } from '../../src/components/auth/LoginForm';
 
 const replace = vi.fn();
+
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+});
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ replace }),
