@@ -1,5 +1,8 @@
 import { internalAuthEmail } from './internalIdentity';
+import { UnsupportedLegacyRoleError } from './legacyCredentialVerifier';
 import type { LegacyInternalUser, PesmadUser } from '../identity/types';
+
+export { UnsupportedLegacyRoleError } from './legacyCredentialVerifier';
 
 export interface LoginDependencies {
   getIdentityByUsername(username: string): Promise<PesmadUser | null>;
@@ -14,13 +17,6 @@ export class PesmadLoginError extends Error {
   constructor(public readonly status: number, message: string) {
     super(message);
     this.name = 'PesmadLoginError';
-  }
-}
-
-export class UnsupportedLegacyRoleError extends Error {
-  constructor() {
-    super('Legacy role is not eligible for Pesmad App');
-    this.name = 'UnsupportedLegacyRoleError';
   }
 }
 
@@ -42,9 +38,12 @@ export async function authenticatePesmadCredentials(
     }
 
     const signIn = await deps.signInFirebasePassword({
-      email: internalAuthEmail(username),
+      email: internalAuthEmail(existingIdentity.username),
       password,
     });
+    if (signIn.localId !== existingIdentity.authUid) {
+      throw new PesmadLoginError(401, 'Identitas autentikasi tidak cocok.');
+    }
 
     return { identity: existingIdentity, idToken: signIn.idToken };
   }
@@ -79,5 +78,9 @@ export async function authenticatePesmadCredentials(
   }
 
   const signIn = await deps.signInFirebasePassword({ email, password });
+  if (signIn.localId !== firebaseUser.uid) {
+    throw new PesmadLoginError(401, 'Identitas autentikasi tidak cocok.');
+  }
+
   return { identity, idToken: signIn.idToken };
 }
