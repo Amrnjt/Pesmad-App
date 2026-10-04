@@ -1,6 +1,7 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
+import { useState } from 'react';
+import type { FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface LoginFormProps {
@@ -31,45 +32,49 @@ export function LoginForm({ nextPath = '/dashboard' }: LoginFormProps) {
       const payload = (await response.json().catch(() => null)) as { error?: string } | null;
 
       if (!response.ok) {
-        setError(payload?.error ?? 'Login tidak dapat diproses.');
+        setError(payload?.error ?? 'Login tidak dapat diproses. Coba lagi.');
         return;
       }
 
-      const safeNextPath = nextPath.startsWith('/') && !nextPath.startsWith('//')
-        ? nextPath
-        : '/dashboard';
-
-      router.replace(safeNextPath);
+      router.replace(nextPath);
+      router.refresh();
     } catch {
-      setError('Koneksi gagal. Silakan coba lagi.');
+      setError('Koneksi gagal. Periksa internet Anda lalu coba lagi.');
     } finally {
       setPending(false);
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate>
-      <div className="login-card">
+    <form className="auth-form" onSubmit={handleSubmit}>
+      <section className="auth-card" aria-labelledby="login-title">
         <p className="eyebrow">Pesmad App</p>
-        <h1>Masuk</h1>
-        <p>Gunakan username dan password Pesmad Anda.</p>
+        <h1 id="login-title">Masuk</h1>
+        <p className="auth-intro">Gunakan akun internal Pesmad untuk melanjutkan.</p>
 
-        <label htmlFor="username">Username</label>
-        <input id="username" name="username" type="text" autoComplete="username" required />
+        <div className="form-field">
+          <label htmlFor="username">Username</label>
+          <input id="username" name="username" type="text" autoComplete="username" required disabled={pending} />
+        </div>
 
-        <label htmlFor="password">Password</label>
-        <input id="password" name="password" type="password" autoComplete="current-password" required />
+        <div className="form-field">
+          <label htmlFor="password">Password</label>
+          <input id="password" name="password" type="password" autoComplete="current-password" required disabled={pending} />
+        </div>
 
         {error ? (
-          <p role="alert" aria-live="polite">
+          <p className="form-error" role="alert" aria-live="polite">
             {error}
           </p>
         ) : null}
 
-        <button type="submit" disabled={pending}>
+        <button className="primary-button" type="submit" disabled={pending}>
           {pending ? 'Memproses…' : 'Masuk'}
         </button>
-      </div>
+        <p className="form-status" role="status" aria-live="polite">
+          {pending ? 'Sedang memeriksa akun Anda.' : ''}
+        </p>
+      </section>
     </form>
   );
 }
