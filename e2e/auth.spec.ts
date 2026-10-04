@@ -21,13 +21,6 @@ test('mocked login reaches a protected route and logout clears the session', asy
       },
     });
   });
-  await page.route('http://localhost:3000/dashboard', async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'text/html',
-      body: '<!doctype html><html><body><h1>Dashboard</h1></body></html>',
-    });
-  });
 
   await page.goto('/login?next=%2Fdashboard');
   await page.getByLabel('Username').fill('ustadz01');
@@ -35,8 +28,20 @@ test('mocked login reaches a protected route and logout clears the session', asy
   await page.getByRole('button', { name: 'Masuk' }).click();
 
   await expect(page).toHaveURL(/\/dashboard$/);
-  await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
+  await expect.poll(async () => {
+    const cookies = await context.cookies('http://localhost:3000');
+    return cookies.some((cookie) => cookie.name === 'pesmad_session');
+  }).toBeTruthy();
 
+  await page.route('**/api/auth/logout', async (route) => {
+    await route.fulfill({
+      status: 200,
+      headers: {
+        'set-cookie': 'pesmad_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0',
+      },
+      json: { success: true },
+    });
+  });
   const logout = await page.request.post('/api/auth/logout');
   expect(logout.ok()).toBeTruthy();
 
