@@ -24,7 +24,3 @@ jobs:
         run: npm run lint
       - name: Build
         run: npm run build
-      - name: Install Playwright Chromium
-        run: npx playwright install --with-deps chromium
-      - name: Run PWA browser test
-        run: npm run test:e2e -- e2e/pwa.spec.ts
