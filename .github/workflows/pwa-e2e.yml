@@ -1,0 +1,33 @@
+name: Pesmad App PWA Browser
+
+on:
+  push:
+    branches:
+      - feat/pesmad-app-v1
+    paths:
+      - 'src/app/manifest.ts'
+      - 'src/app/layout.tsx'
+      - 'src/components/pwa/**'
+      - 'public/sw.js'
+      - 'public/offline.html'
+      - 'public/icons/**'
+      - 'e2e/pwa.spec.ts'
+      - 'playwright.config.ts'
+      - '.github/workflows/pwa-e2e.yml'
+
+jobs:
+  pwa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install dependencies
+        run: npm install
+      - name: Build
+        run: npm run build
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Run PWA browser test
+        run: npm run test:e2e -- e2e/pwa.spec.ts
