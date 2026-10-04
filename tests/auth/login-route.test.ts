@@ -25,7 +25,12 @@ const identity = {
 describe('Pesmad login HTTP boundary', () => {
   it('returns only the sanitized profile with no-store for valid credentials', async () => {
     const authenticate = vi.fn().mockResolvedValue({ identity, idToken: 'server-only-token' });
-    const response = await handleLoginRequest({ username: 'ustadz01', password: 'secret' }, authenticate);
+    const createSession = vi.fn().mockResolvedValue('signed-session-cookie');
+    const response = await handleLoginRequest(
+      { username: 'ustadz01', password: 'secret' },
+      authenticate,
+      createSession,
+    );
 
     expect(response.status).toBe(200);
     expect(response.headers.get('cache-control')).toBe('no-store');
