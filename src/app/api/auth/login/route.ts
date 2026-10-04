@@ -3,11 +3,8 @@ import { signInFirebasePassword } from '../../../../lib/auth/firebasePasswordSig
 import { verifyLegacyCredential } from '../../../../lib/auth/legacyCredentialVerifier';
 import { authenticatePesmadCredentials, PesmadLoginError } from '../../../../lib/auth/loginService';
 import { getAdminAuth } from '../../../../lib/firebase/admin';
-import {
-  createPesmadSession,
-  createMigratedIdentity,
-  getIdentityByUsername,
-} from '../../../../lib/identity/repository';
+import { createPesmadSession } from '../../../../lib/auth/session';
+import { createMigratedIdentity, getIdentityByUsername } from '../../../../lib/identity/repository';
 import type { PesmadUser } from '../../../../lib/identity/types';
 
 type Authenticate = (input: { username: string; password: string }) => Promise<{
