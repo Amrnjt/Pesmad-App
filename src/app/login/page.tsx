@@ -24,8 +24,11 @@ function safeNextPath(value: string | string[] | undefined): string {
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const cookieStore = await cookies();
-  const profile = await readPesmadSession(cookieStore.get(sessionCookieName())?.value);
-  if (profile) redirect('/dashboard');
+  const sessionCookie = cookieStore.get(sessionCookieName())?.value;
+  if (sessionCookie) {
+    const profile = await readPesmadSession(sessionCookie);
+    if (profile) redirect('/dashboard');
+  }
 
   const params = await searchParams;
 
