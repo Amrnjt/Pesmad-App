@@ -14,19 +14,6 @@ on:
       - 'e2e/pwa.spec.ts'
       - 'playwright.config.ts'
       - '.github/workflows/pwa-e2e.yml'
-  pull_request:
-    branches:
-      - main
-    paths:
-      - 'src/app/manifest.ts'
-      - 'src/app/layout.tsx'
-      - 'src/components/pwa/**'
-      - 'public/sw.js'
-      - 'public/offline.html'
-      - 'public/icons/**'
-      - 'e2e/pwa.spec.ts'
-      - 'playwright.config.ts'
-      - '.github/workflows/pwa-e2e.yml'
 
 jobs:
   pwa:
