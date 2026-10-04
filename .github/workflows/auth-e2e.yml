@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - feat/pesmad-app-v1
+      - feat/pesmad-login-dashboard-v2
     paths:
       - 'src/app/api/auth/**'
       - 'src/components/auth/**'
