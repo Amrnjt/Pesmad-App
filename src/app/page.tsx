@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function Page() {
   return (
     <main className="landing-shell">
@@ -8,6 +10,9 @@ export default function Page() {
           Portal internal Pesmad untuk mengakses Smart Tahfidz, Sistem Kinerja,
           dan layanan digital pesantren dalam satu pusat kendali.
         </p>
+        <Link className="primary-link" href="/login">
+          Masuk ke Pesmad App
+        </Link>
       </section>
     </main>
   );
