@@ -7,6 +7,9 @@ test('mocked login reaches a protected route and logout clears the session', asy
   await page.route('**/api/auth/login', async (route) => {
     await route.fulfill({
       status: 200,
+      headers: {
+        'set-cookie': 'pesmad_session=test-session; Path=/; HttpOnly; SameSite=Lax',
+      },
       json: {
         profile: {
           authUid: 'uid-test',
@@ -18,22 +21,6 @@ test('mocked login reaches a protected route and logout clears the session', asy
       },
     });
   });
-
-  await page.goto('/login?next=%2Fdashboard');
-  await page.getByLabel('Username').fill('ustadz01');
-  await page.getByLabel('Password').fill('secret');
-  await page.getByRole('button', { name: 'Masuk' }).click();
-
-  await context.addCookies([
-    {
-      name: 'pesmad_session',
-      value: 'test-session',
-      url: 'http://localhost:3000',
-      httpOnly: true,
-      sameSite: 'Lax',
-    },
-  ]);
-
   await page.route('http://localhost:3000/dashboard', async (route) => {
     await route.fulfill({
       status: 200,
@@ -42,7 +29,12 @@ test('mocked login reaches a protected route and logout clears the session', asy
     });
   });
 
-  await page.goto('/dashboard');
+  await page.goto('/login?next=%2Fdashboard');
+  await page.getByLabel('Username').fill('ustadz01');
+  await page.getByLabel('Password').fill('secret');
+  await page.getByRole('button', { name: 'Masuk' }).click();
+
+  await expect(page).toHaveURL(/\/dashboard$/);
   await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
 
   const logout = await page.request.post('/api/auth/logout');
@@ -67,7 +59,7 @@ test('Wali or Santri credentials are rejected by the login UI contract', async (
   await page.getByLabel('Password').fill('secret');
   await page.getByRole('button', { name: 'Masuk' }).click();
 
-  await expect(page.getByRole('alert')).toHaveText('Akses ditolak.');
+  await expect(page.locator('.form-error')).toHaveText('Akses ditolak.');
   await expect(page).toHaveURL(/\/login$/);
 });
 
