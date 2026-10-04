@@ -24,10 +24,11 @@ export interface PesmadUser {
   updatedAt: string;
 }
 
-export function defaultModuleAccessForRole(_role: PesmadRole): ModuleAccessMap {
+export function defaultModuleAccessForRole(role: PesmadRole): ModuleAccessMap {
+  const activeAccess: ModuleAccess = role === 'Superadmin' ? 'admin' : role === 'Pimpinan' ? 'view' : 'user';
   return {
-    tahfidz: 'none',
-    kinerja: 'none',
+    tahfidz: activeAccess,
+    kinerja: activeAccess,
     keuangan: 'none',
     diniyah: 'none',
     santri: 'none',
