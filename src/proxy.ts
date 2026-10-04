@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { sessionCookieName } from './src/lib/auth/session';
+import { sessionCookieName } from './lib/auth/session';
 
 const PROTECTED_PREFIXES = ['/dashboard', '/admin'];
 
