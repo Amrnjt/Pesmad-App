@@ -27,7 +27,7 @@ test('mocked login reaches a protected route and logout clears the session', asy
   await page.getByLabel('Password').fill('secret');
   await page.getByRole('button', { name: 'Masuk' }).click();
 
-  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page).toHaveURL(/\\/dashboard$/);
   await expect.poll(async () => {
     const cookies = await context.cookies('http://localhost:3000');
     return cookies.some((cookie) => cookie.name === 'pesmad_session');
@@ -42,8 +42,11 @@ test('mocked login reaches a protected route and logout clears the session', asy
       json: { success: true },
     });
   });
-  const logout = await page.request.post('/api/auth/logout');
-  expect(logout.ok()).toBeTruthy();
+  const logoutOk = await page.evaluate(async () => {
+    const response = await fetch('/api/auth/logout', { method: 'POST' });
+    return response.ok;
+  });
+  expect(logoutOk).toBeTruthy();
 
   await expect.poll(async () => {
     const cookies = await context.cookies('http://localhost:3000');
@@ -65,11 +68,11 @@ test('Wali or Santri credentials are rejected by the login UI contract', async (
   await page.getByRole('button', { name: 'Masuk' }).click();
 
   await expect(page.locator('.form-error')).toHaveText('Akses ditolak.');
-  await expect(page).toHaveURL(/\/login$/);
+  await expect(page).toHaveURL(/\\/login$/);
 });
 
 test('unauthenticated protected navigation redirects to login', async ({ page }) => {
   await page.goto('/dashboard');
 
-  await expect(page).toHaveURL(/\/login\?next=%2Fdashboard$/);
+  await expect(page).toHaveURL(/\\/login\\?next=%2Fdashboard$/);
 });
