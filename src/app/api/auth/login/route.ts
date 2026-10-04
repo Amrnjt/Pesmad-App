@@ -3,7 +3,11 @@ import { signInFirebasePassword } from '../../../../lib/auth/firebasePasswordSig
 import { verifyLegacyCredential } from '../../../../lib/auth/legacyCredentialVerifier';
 import { authenticatePesmadCredentials, PesmadLoginError } from '../../../../lib/auth/loginService';
 import { getAdminAuth } from '../../../../lib/firebase/admin';
-import { createPesmadSession } from '../../../../lib/auth/session';
+import {
+  createPesmadSession,
+  sessionCookieName,
+  sessionCookieOptions,
+} from '../../../../lib/auth/session';
 import { createMigratedIdentity, getIdentityByUsername } from '../../../../lib/identity/repository';
 import type { PesmadUser } from '../../../../lib/identity/types';
 
@@ -43,23 +47,11 @@ export async function handleLoginRequest(
       { status: 200, headers: noStoreHeaders },
     );
 
-    response.cookies.set('__Host-pesmad_session', session, {
-      httpOnly: true,
-      secure: environment === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 5 * 24 * 60 * 60,
-    });
-
-    if (environment !== 'production') {
-      response.cookies.set('pesmad_session', session, {
-        httpOnly: true,
-        secure: false,
-        sameSite: 'lax',
-        path: '/',
-        maxAge: 5 * 24 * 60 * 60,
-      });
-    }
+    response.cookies.set(
+      sessionCookieName(environment),
+      session,
+      sessionCookieOptions(environment),
+    );
 
     return response;
   } catch (error) {
