@@ -3,13 +3,19 @@ import { signInFirebasePassword } from '../../../../lib/auth/firebasePasswordSig
 import { verifyLegacyCredential } from '../../../../lib/auth/legacyCredentialVerifier';
 import { authenticatePesmadCredentials, PesmadLoginError } from '../../../../lib/auth/loginService';
 import { getAdminAuth } from '../../../../lib/firebase/admin';
-import { createMigratedIdentity, getIdentityByUsername } from '../../../../lib/identity/repository';
+import {
+  createPesmadSession,
+  createMigratedIdentity,
+  getIdentityByUsername,
+} from '../../../../lib/identity/repository';
 import type { PesmadUser } from '../../../../lib/identity/types';
 
 type Authenticate = (input: { username: string; password: string }) => Promise<{
   identity: PesmadUser;
   idToken: string;
 }>;
+
+type SessionCreator = (idToken: string) => Promise<string>;
 
 const noStoreHeaders = { 'cache-control': 'no-store' };
 
@@ -19,7 +25,12 @@ function isLoginBody(body: unknown): body is { username: string; password: strin
   return typeof candidate.username === 'string' && typeof candidate.password === 'string';
 }
 
-export async function handleLoginRequest(body: unknown, authenticate: Authenticate): Promise<Response> {
+export async function handleLoginRequest(
+  body: unknown,
+  authenticate: Authenticate,
+  createSession: SessionCreator = createPesmadSession,
+  environment = process.env.NODE_ENV,
+): Promise<Response> {
   if (!isLoginBody(body)) {
     return NextResponse.json(
       { error: 'Permintaan login tidak valid.' },
@@ -29,10 +40,31 @@ export async function handleLoginRequest(body: unknown, authenticate: Authentica
 
   try {
     const result = await authenticate({ username: body.username, password: body.password });
-    return NextResponse.json(
+    const session = await createSession(result.idToken);
+    const response = NextResponse.json(
       { profile: result.identity },
       { status: 200, headers: noStoreHeaders },
     );
+
+    response.cookies.set('__Host-pesmad_session', session, {
+      httpOnly: true,
+      secure: environment === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 5 * 24 * 60 * 60,
+    });
+
+    if (environment !== 'production') {
+      response.cookies.set('pesmad_session', session, {
+        httpOnly: true,
+        secure: false,
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 5 * 24 * 60 * 60,
+      });
+    }
+
+    return response;
   } catch (error) {
     if (error instanceof PesmadLoginError) {
       return NextResponse.json(
