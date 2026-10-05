@@ -18,7 +18,9 @@ export const MODULE_DESCRIPTIONS: Record<ModuleId, string> = {
   laporan: 'Rekapitulasi berkala dan pelaporan pimpinan madrasah.',
 };
 
-export const ACCESS_LABELS: Record<string, string> = {
+export type ValidModuleAccess = 'view' | 'user' | 'admin';
+
+export const ACCESS_LABELS: Record<ValidModuleAccess, string> = {
   view: 'Lihat',
   user: 'Pengguna',
   admin: 'Administrator',
@@ -29,19 +31,24 @@ export interface AccessibleModuleItem {
   name: string;
   description: string;
   access: string;
-  rawAccess: string;
+  rawAccess: ValidModuleAccess;
+}
+
+function isValidAccess(access: unknown): access is ValidModuleAccess {
+  return access === 'view' || access === 'user' || access === 'admin';
 }
 
 export function getAccessibleModules(user: PesmadUser): AccessibleModuleItem[] {
   if (!user || !user.modules) return [];
 
   return (Object.entries(user.modules) as [ModuleId, string][])
-    .filter(([, access]) => access !== 'none')
+    .filter((entry): entry is [ModuleId, ValidModuleAccess] => isValidAccess(entry[1]))
     .map(([module, access]) => ({
       id: module,
       name: MODULE_LABELS[module] ?? module,
       description: MODULE_DESCRIPTIONS[module] ?? 'Layanan Pesmad terpadu.',
-      access: ACCESS_LABELS[access] ?? 'Akses tersedia',
+      access: ACCESS_LABELS[access],
       rawAccess: access,
     }));
 }
+

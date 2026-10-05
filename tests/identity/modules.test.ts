@@ -60,8 +60,26 @@ describe('getAccessibleModules', () => {
     expect(modules.map((m) => m.id)).toEqual(['tahfidz', 'diniyah']);
   });
 
+  it('excludes modules with unknown access values, invalid types, or unexpected permissions', () => {
+    const userWithInvalidAccess = createMockUser('Ustadz', {
+      modules: {
+        tahfidz: 'user',
+        kinerja: 'superuser', // unknown value
+        keuangan: 'read-write', // unknown value
+        diniyah: 'guest', // unknown value
+        santri: 123, // invalid type
+        laporan: null, // invalid type
+      },
+    });
+
+    const modules = getAccessibleModules(userWithInvalidAccess);
+    expect(modules.map((m) => m.id)).toEqual(['tahfidz']);
+    expect(modules[0]?.access).toBe('Pengguna');
+  });
+
   it('handles empty or missing modules safely', () => {
     const emptyUser = createMockUser('Ustadz', { modules: {} });
     expect(getAccessibleModules(emptyUser)).toEqual([]);
   });
 });
+
